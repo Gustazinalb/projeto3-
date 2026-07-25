@@ -58,6 +58,10 @@
                 <li class="nav-item fs-4">
                     <a class="nav-link text-dark fw-bold" href="contato.php">Contato</a>
                 </li>
+
+                <li class="nav-item fs-4">
+                    <a class="nav-link text-dark fw-bold" href="admin.php">Admin</a>
+                </li>
                 
             </ul>
 
