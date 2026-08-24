@@ -18,12 +18,14 @@ export const formatarProdutos = (produtos) => {
         return `${produto.nome_produto} - R$ ${produto.preco.toFixed(2)}`;
     });
 };
-export const encontrarProdutoMaisCaro = (produtos) => {
+export const encontrarProdutoDestaque = (produtos) => {
     if (produtos.length === 0) {
         return null;
     }
     return produtos.reduce((maior, produto) => {
-        if (produto.preco > maior.preco) {
+        const valorProduto = produto.preco * produto.estoque;
+        const valorMaior = maior.preco * maior.estoque;
+        if (valorProduto > valorMaior) {
             return produto;
         }
         return maior;

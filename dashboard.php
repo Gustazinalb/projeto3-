@@ -348,7 +348,36 @@
 
 
     </section>
+    <section class="dashboard-criticos">
 
+    <div class="criticos-cabecalho">
+
+        <div>
+            <span class="card-tag tag-alerta">
+                ATENÇÃO
+            </span>
+
+            <h2>
+                Produtos com estoque crítico
+            </h2>
+
+            <p>
+                Produtos com 5 unidades ou menos em estoque.
+            </p>
+        </div>
+
+    </div>
+
+    <div
+        id="listaEstoqueCritico"
+        class="lista-criticos"
+    >
+        <p class="sem-criticos">
+            Nenhum produto com estoque crítico.
+        </p>
+    </div>
+
+</section>
 
 </main>
 

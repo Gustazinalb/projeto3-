@@ -32,7 +32,7 @@ export const formatarProdutos = (produtos: Produto[]): string[] => {
 };
 
 
-export const encontrarProdutoMaisCaro = (
+export const encontrarProdutoDestaque = (
     produtos: Produto[]
 ): Produto | null => {
 
@@ -42,7 +42,13 @@ export const encontrarProdutoMaisCaro = (
 
     return produtos.reduce((maior, produto) => {
 
-        if (produto.preco > maior.preco) {
+        const valorProduto =
+            produto.preco * produto.estoque;
+
+        const valorMaior =
+            maior.preco * maior.estoque;
+
+        if (valorProduto > valorMaior) {
             return produto;
         }
 

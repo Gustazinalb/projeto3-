@@ -992,3 +992,58 @@ body {
     }
 
 }
+
+.dashboard-criticos {
+    margin-top: 30px;
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+}
+
+.criticos-cabecalho h2 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.criticos-cabecalho p {
+    margin-bottom: 20px;
+    color: #777;
+}
+
+.lista-criticos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.produto-critico {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 18px;
+    border-radius: 10px;
+    background: #f8f8f8;
+}
+
+.produto-critico div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.produto-critico span {
+    font-size: 13px;
+    color: #777;
+}
+
+.produto-critico > strong {
+    font-size: 14px;
+}
+
+.sem-criticos {
+    margin: 0;
+    padding: 15px;
+    text-align: center;
+    color: #777;
+}
