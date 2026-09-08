@@ -1,5 +1,5 @@
-import { buscarProdutos } from "./api.js";
-import { calcularEstoqueTotal, calcularValorEstoque, filtrarEstoqueCritico, formatarProdutos, encontrarProdutoDestaque } from "./calculos.js";
+import { buscarProdutos, buscarDashboard } from "./api.js";
+import { calcularValorEstoque, filtrarEstoqueCritico, formatarProdutos, encontrarProdutoDestaque } from "./calculos.js";
 const formatarMoeda = (valor) => {
     return valor.toLocaleString("pt-BR", {
         style: "currency",
@@ -23,84 +23,134 @@ const carregarDashboard = async () => {
         return;
     }
     try {
-        const produtos = await buscarProdutos();
+        /*
+         * BUSCA OS DADOS DAS APIs
+         */
+        const [produtos, dashboard] = await Promise.all([
+            buscarProdutos(),
+            buscarDashboard()
+        ]);
+        /*
+         * DADOS VINDOS DA VIEW
+         *
+         * vw_dashboard
+         *
+         * ↓
+         *
+         * api/dashboard.php
+         */
+        totalProdutos.textContent =
+            dashboard.total_produtos.toString();
+        totalEstoque.textContent =
+            dashboard.total_estoque.toString();
+        /*
+         * Caso não existam produtos
+         */
         if (produtos.length === 0) {
-            totalProdutos.textContent = "0";
-            totalEstoque.textContent = "0";
-            valorEstoque.textContent = "R$ 0,00";
-            estoqueCritico.textContent = "0";
+            valorEstoque.textContent =
+                "R$ 0,00";
+            estoqueCritico.textContent =
+                "0";
             produtoDestaque.textContent =
                 "Nenhum produto";
+            listaEstoqueCritico.innerHTML = `
+
+                    <p class="sem-criticos">
+
+                        Nenhum produto com estoque crítico.
+
+                    </p>
+
+                `;
             return;
         }
         /*
          * REDUCE
-         * Calcula o estoque total.
-         */
-        const estoqueTotal = calcularEstoqueTotal(produtos);
-        /*
-         * REDUCE
-         * Calcula o valor total do estoque.
+         *
+         * Calcula o valor total
+         * do estoque.
          */
         const valorTotal = calcularValorEstoque(produtos);
         /*
          * FILTER
-         * Encontra produtos com estoque crítico.
+         *
+         * Encontra produtos com
+         * estoque crítico.
          */
         const produtosCriticos = filtrarEstoqueCritico(produtos);
+        /*
+         * LISTA DE ESTOQUE CRÍTICO
+         */
         if (produtosCriticos.length === 0) {
             listaEstoqueCritico.innerHTML = `
-        <p class="sem-criticos">
-            Nenhum produto com estoque crítico.
-        </p>
-    `;
+
+                    <p class="sem-criticos">
+
+                        Nenhum produto com estoque crítico.
+
+                    </p>
+
+                `;
         }
         else {
             listaEstoqueCritico.innerHTML =
                 produtosCriticos
                     .map((produto) => {
                     return `
-                    <div class="produto-critico">
 
-                        <div>
-                            <strong>
-                                ${produto.nome_produto}
-                            </strong>
+                                    <div class="produto-critico">
 
-                            <span>
-                                ${produto.nome_categoria}
-                            </span>
-                        </div>
+                                        <div>
 
-                        <strong>
-                            ${produto.estoque} unidades
-                        </strong>
+                                            <strong>
 
-                    </div>
-                `;
+                                                ${produto.nome_produto}
+
+                                            </strong>
+
+
+                                            <span>
+
+                                                ${produto.nome_categoria}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        <strong>
+
+                                            ${produto.estoque} unidades
+
+                                        </strong>
+
+                                    </div>
+
+                                `;
                 })
                     .join("");
         }
         /*
          * MAP
-         * Formata os produtos para apresentação.
+         *
+         * Formata produtos.
          */
         const produtosFormatados = formatarProdutos(produtos);
         /*
          * RANKING
-         * Encontra o produto com maior
-         * valor armazenado em estoque.
+         *
+         * Encontra o produto
+         * em destaque.
          */
         const produtoDestaqueAtual = encontrarProdutoDestaque(produtos);
         /*
-         * DASHBOARD
+         * VALOR DO ESTOQUE
          */
-        totalProdutos.textContent =
-            produtos.length.toString();
-        totalEstoque.textContent =
-            estoqueTotal.toString();
         valorEstoque.textContent =
             formatarMoeda(valorTotal);
+        /*
+         * ESTOQUE CRÍTICO
+         */
         estoqueCritico.textContent =
             produtosCriticos.length.toString();
         /*
@@ -117,10 +167,7 @@ const carregarDashboard = async () => {
                 "Nenhum produto";
         }
         /*
-         * MAP FOI EXECUTADO.
-         *
-         * Mantemos o resultado pronto para futuras
-         * informações da dashboard.
+         * MAP EXECUTADO
          */
         console.log("Produtos formatados:", produtosFormatados);
     }

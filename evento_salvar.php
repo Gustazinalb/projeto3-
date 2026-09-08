@@ -16,6 +16,8 @@ $nome = trim($_POST['nome_evento'] ?? '');
 
 $data = $_POST['data_evento'] ?? '';
 
+$hora_evento = $_POST['hora_evento'] ?? '';
+
 $descricao = trim($_POST['descricao'] ?? '');
 
 $produtos = $_POST['produtos'] ?? [];
@@ -25,7 +27,11 @@ $produtos = $_POST['produtos'] ?? [];
  * Validação básica.
  */
 
-if ($nome === '' || $data === '') {
+if (
+    $nome === '' ||
+    $data === '' ||
+    $hora_evento === ''
+) {
 
     header(
         "Location: eventos_admin.php?erro=Preencha os campos obrigatórios."
@@ -70,17 +76,21 @@ try {
             (
                 nome_evento,
                 data_evento,
+                hora_evento,
                 descricao
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?)
         ");
 
+
         $stmt->bind_param(
-            "sss",
+            "ssss",
             $nome,
             $data,
+            $hora_evento,
             $descricao
         );
+
 
         $stmt->execute();
 
@@ -104,17 +114,21 @@ try {
             SET
                 nome_evento = ?,
                 data_evento = ?,
+                hora_evento = ?,
                 descricao = ?
             WHERE id_evento = ?
         ");
 
+
         $stmt->bind_param(
-            "sssi",
+            "ssssi",
             $nome,
             $data,
+            $hora_evento,
             $descricao,
             $id
         );
+
 
         $stmt->execute();
 
@@ -128,7 +142,12 @@ try {
             WHERE id_evento = ?
         ");
 
-        $stmt->bind_param("i", $id);
+
+        $stmt->bind_param(
+            "i",
+            $id
+        );
+
 
         $stmt->execute();
 
@@ -155,11 +174,13 @@ try {
 
             $idProduto = (int) $idProduto;
 
+
             $stmt->bind_param(
                 "ii",
                 $id,
                 $idProduto
             );
+
 
             $stmt->execute();
 

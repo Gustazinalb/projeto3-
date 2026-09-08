@@ -21,13 +21,14 @@ $evento = null;
 if ($id) {
 
     $stmt = $conexao->prepare("
-        SELECT
-            id_evento,
-            nome_evento,
-            data_evento,
-            descricao
-        FROM eventos
-        WHERE id_evento = ?
+       SELECT
+    id_evento,
+    nome_evento,
+    data_evento,
+    hora_evento,
+    descricao
+FROM eventos
+WHERE id_evento = ?
     ");
 
     $stmt->bind_param("i", $id);
@@ -260,6 +261,23 @@ $modoEdicao = $evento !== null;
                             $evento['data_evento'] ?? ''
                         ) ?>"
                     >
+
+                </div>
+
+                <div class="mb-3">
+
+                <label for="hora_evento" class="form-label">
+                    Horário do Evento
+                </label>
+
+                <input
+                    type="time"
+                    class="form-control"
+                    id="hora_evento"
+                    name="hora_evento"
+                    value="<?= isset($evento['hora_evento']) ? htmlspecialchars($evento['hora_evento']) : '' ?>"
+                    required
+                >
 
                 </div>
 

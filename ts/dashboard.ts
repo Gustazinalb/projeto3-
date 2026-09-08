@@ -1,241 +1,396 @@
-import { buscarProdutos } from "./api.js";
+import {
+
+    buscarProdutos,
+    buscarDashboard
+
+} from "./api.js";
+
 
 import {
-    calcularEstoqueTotal,
+
     calcularValorEstoque,
     filtrarEstoqueCritico,
     formatarProdutos,
     encontrarProdutoDestaque
+
 } from "./calculos.js";
 
 
-const formatarMoeda = (valor: number): string => {
+const formatarMoeda =
+    (valor: number): string => {
 
-    return valor.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    });
-};
+        return valor.toLocaleString(
+            "pt-BR",
+            {
 
+                style: "currency",
 
-const carregarDashboard = async (): Promise<void> => {
+                currency: "BRL"
 
-    const totalProdutos =
-        document.querySelector<HTMLElement>("#totalProdutos");
-
-    const totalEstoque =
-        document.querySelector<HTMLElement>("#totalEstoque");
-
-    const valorEstoque =
-        document.querySelector<HTMLElement>("#valorEstoque");
-
-    const estoqueCritico =
-        document.querySelector<HTMLElement>("#estoqueCritico");
-
-    const produtoDestaque =
-        document.querySelector<HTMLElement>("#produtoDestaque");
-      
-    const listaEstoqueCritico =
-    document.querySelector<HTMLElement>("#listaEstoqueCritico");    
-
-
-    if (
-        !totalProdutos ||
-        !totalEstoque ||
-        !valorEstoque ||
-        !estoqueCritico ||
-        !produtoDestaque ||
-        !listaEstoqueCritico
-    ) {
-        console.error(
-            "Elementos da Dashboard não foram encontrados."
+            }
         );
 
-        return;
-    }
+    };
 
 
-    try {
+const carregarDashboard =
+    async (): Promise<void> => {
 
-        const produtos = await buscarProdutos();
+
+        const totalProdutos =
+            document.querySelector<HTMLElement>(
+                "#totalProdutos"
+            );
 
 
-        if (produtos.length === 0) {
+        const totalEstoque =
+            document.querySelector<HTMLElement>(
+                "#totalEstoque"
+            );
 
-            totalProdutos.textContent = "0";
 
-            totalEstoque.textContent = "0";
+        const valorEstoque =
+            document.querySelector<HTMLElement>(
+                "#valorEstoque"
+            );
 
-            valorEstoque.textContent = "R$ 0,00";
 
-            estoqueCritico.textContent = "0";
+        const estoqueCritico =
+            document.querySelector<HTMLElement>(
+                "#estoqueCritico"
+            );
 
-            produtoDestaque.textContent =
-                "Nenhum produto";
+
+        const produtoDestaque =
+            document.querySelector<HTMLElement>(
+                "#produtoDestaque"
+            );
+
+
+        const listaEstoqueCritico =
+            document.querySelector<HTMLElement>(
+                "#listaEstoqueCritico"
+            );
+
+
+        if (
+
+            !totalProdutos ||
+
+            !totalEstoque ||
+
+            !valorEstoque ||
+
+            !estoqueCritico ||
+
+            !produtoDestaque ||
+
+            !listaEstoqueCritico
+
+        ) {
+
+            console.error(
+                "Elementos da Dashboard não foram encontrados."
+            );
 
             return;
+
         }
 
 
-        /*
-         * REDUCE
-         * Calcula o estoque total.
-         */
-
-        const estoqueTotal =
-            calcularEstoqueTotal(produtos);
+        try {
 
 
-        /*
-         * REDUCE
-         * Calcula o valor total do estoque.
-         */
+            /*
+             * BUSCA OS DADOS DAS APIs
+             */
 
-        const valorTotal =
-            calcularValorEstoque(produtos);
+            const [
+
+                produtos,
+
+                dashboard
+
+            ] = await Promise.all([
+
+                buscarProdutos(),
+
+                buscarDashboard()
+
+            ]);
 
 
-        /*
-         * FILTER
-         * Encontra produtos com estoque crítico.
-         */
+            /*
+             * DADOS VINDOS DA VIEW
+             *
+             * vw_dashboard
+             *
+             * ↓
+             *
+             * api/dashboard.php
+             */
 
-        const produtosCriticos =
-            filtrarEstoqueCritico(produtos);
+            totalProdutos.textContent =
+                dashboard.total_produtos.toString();
 
-        if (produtosCriticos.length === 0) {
 
-    listaEstoqueCritico.innerHTML = `
-        <p class="sem-criticos">
-            Nenhum produto com estoque crítico.
-        </p>
-    `;
+            totalEstoque.textContent =
+                dashboard.total_estoque.toString();
 
-} else {
 
-    listaEstoqueCritico.innerHTML =
-        produtosCriticos
-            .map((produto) => {
+            /*
+             * Caso não existam produtos
+             */
 
-                return `
-                    <div class="produto-critico">
+            if (produtos.length === 0) {
 
-                        <div>
-                            <strong>
-                                ${produto.nome_produto}
-                            </strong>
 
-                            <span>
-                                ${produto.nome_categoria}
-                            </span>
-                        </div>
+                valorEstoque.textContent =
+                    "R$ 0,00";
 
-                        <strong>
-                            ${produto.estoque} unidades
-                        </strong>
 
-                    </div>
+                estoqueCritico.textContent =
+                    "0";
+
+
+                produtoDestaque.textContent =
+                    "Nenhum produto";
+
+
+                listaEstoqueCritico.innerHTML = `
+
+                    <p class="sem-criticos">
+
+                        Nenhum produto com estoque crítico.
+
+                    </p>
+
                 `;
 
-            })
-            .join("");
-}    
+
+                return;
+
+            }
 
 
-        /*
-         * MAP
-         * Formata os produtos para apresentação.
-         */
+            /*
+             * REDUCE
+             *
+             * Calcula o valor total
+             * do estoque.
+             */
 
-        const produtosFormatados =
-            formatarProdutos(produtos);
-
-
-        /*
-         * RANKING
-         * Encontra o produto com maior
-         * valor armazenado em estoque.
-         */
-
-        const produtoDestaqueAtual =
-            encontrarProdutoDestaque(produtos);
+            const valorTotal =
+                calcularValorEstoque(
+                    produtos
+                );
 
 
-        /*
-         * DASHBOARD
-         */
+            /*
+             * FILTER
+             *
+             * Encontra produtos com
+             * estoque crítico.
+             */
 
-        totalProdutos.textContent =
-            produtos.length.toString();
-
-
-        totalEstoque.textContent =
-            estoqueTotal.toString();
-
-
-        valorEstoque.textContent =
-            formatarMoeda(valorTotal);
+            const produtosCriticos =
+                filtrarEstoqueCritico(
+                    produtos
+                );
 
 
-        estoqueCritico.textContent =
-            produtosCriticos.length.toString();
+            /*
+             * LISTA DE ESTOQUE CRÍTICO
+             */
+
+            if (
+                produtosCriticos.length === 0
+            ) {
 
 
-        /*
-         * PRODUTO DESTAQUE
-         */
+                listaEstoqueCritico.innerHTML = `
 
-        if (produtoDestaqueAtual) {
+                    <p class="sem-criticos">
 
-            const valorDestaque =
-                produtoDestaqueAtual.preco *
-                produtoDestaqueAtual.estoque;
+                        Nenhum produto com estoque crítico.
+
+                    </p>
+
+                `;
+
+
+            } else {
+
+
+                listaEstoqueCritico.innerHTML =
+                    produtosCriticos
+
+                        .map(
+                            (produto) => {
+
+                                return `
+
+                                    <div class="produto-critico">
+
+                                        <div>
+
+                                            <strong>
+
+                                                ${produto.nome_produto}
+
+                                            </strong>
+
+
+                                            <span>
+
+                                                ${produto.nome_categoria}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        <strong>
+
+                                            ${produto.estoque} unidades
+
+                                        </strong>
+
+                                    </div>
+
+                                `;
+
+                            }
+                        )
+
+                        .join("");
+
+
+            }
+
+
+            /*
+             * MAP
+             *
+             * Formata produtos.
+             */
+
+            const produtosFormatados =
+                formatarProdutos(
+                    produtos
+                );
+
+
+            /*
+             * RANKING
+             *
+             * Encontra o produto
+             * em destaque.
+             */
+
+            const produtoDestaqueAtual =
+                encontrarProdutoDestaque(
+                    produtos
+                );
+
+
+            /*
+             * VALOR DO ESTOQUE
+             */
+
+            valorEstoque.textContent =
+                formatarMoeda(
+                    valorTotal
+                );
+
+
+            /*
+             * ESTOQUE CRÍTICO
+             */
+
+            estoqueCritico.textContent =
+                produtosCriticos.length.toString();
+
+
+            /*
+             * PRODUTO DESTAQUE
+             */
+
+            if (
+                produtoDestaqueAtual
+            ) {
+
+
+                const valorDestaque =
+
+                    produtoDestaqueAtual.preco *
+
+                    produtoDestaqueAtual.estoque;
+
+
+                produtoDestaque.textContent =
+
+                    `${produtoDestaqueAtual.nome_produto} - ${formatarMoeda(valorDestaque)}`;
+
+
+            } else {
+
+
+                produtoDestaque.textContent =
+                    "Nenhum produto";
+
+            }
+
+
+            /*
+             * MAP EXECUTADO
+             */
+
+            console.log(
+
+                "Produtos formatados:",
+
+                produtosFormatados
+
+            );
+
+
+        } catch (erro) {
+
+
+            console.error(
+
+                "Erro ao carregar a Dashboard:",
+
+                erro
+
+            );
+
+
+            totalProdutos.textContent =
+                "Erro";
+
+
+            totalEstoque.textContent =
+                "Erro";
+
+
+            valorEstoque.textContent =
+                "Erro";
+
+
+            estoqueCritico.textContent =
+                "Erro";
 
 
             produtoDestaque.textContent =
-                `${produtoDestaqueAtual.nome_produto} - ${formatarMoeda(valorDestaque)}`;
 
-        } else {
+                "Não foi possível carregar os dados.";
 
-            produtoDestaque.textContent =
-                "Nenhum produto";
+
         }
 
-
-        /*
-         * MAP FOI EXECUTADO.
-         *
-         * Mantemos o resultado pronto para futuras
-         * informações da dashboard.
-         */
-
-        console.log("Produtos formatados:", produtosFormatados);
-
-
-    } catch (erro) {
-
-        console.error(
-            "Erro ao carregar a Dashboard:",
-            erro
-        );
-
-
-        totalProdutos.textContent =
-            "Erro";
-
-        totalEstoque.textContent =
-            "Erro";
-
-        valorEstoque.textContent =
-            "Erro";
-
-        estoqueCritico.textContent =
-            "Erro";
-
-        produtoDestaque.textContent =
-            "Não foi possível carregar os dados.";
-    }
-};
+    };
 
 
 carregarDashboard();
